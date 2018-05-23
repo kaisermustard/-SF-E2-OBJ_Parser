@@ -1,1 +1,167 @@
-#Expression2 OBJ_Parser
+@name Obj Parser Import
+
+@inputs 
+@outputs [ Scale ]:number
+
+@persist [ Time ]:number
+@persist [ Quota ]:number
+
+@outputs [ X ]:number
+@outputs [ State ]:number
+
+@persist [ DataExplode ]:array 
+@persist [ Vertices, Faces ]:array 
+
+@outputs [ VerticesCount ]:number
+@outputs [ FacesCount ]:number
+
+@trigger none
+
+#[
+https://raw.githubusercontent.com/kaisermustard/-E2-Obj_Parser/master/cube.obj
+https://raw.githubusercontent.com/kaisermustard/-E2-Obj_Parser/master/teapot.obj
+https://raw.githubusercontent.com/kaisermustard/-E2-Obj_Parser/master/shuttle.obj
+https://raw.githubusercontent.com/kaisermustard/-E2-Obj_Parser/master/monkey.obj
+https://raw.githubusercontent.com/kaisermustard/-E2-Obj_Parser/master/deer.obj
+https://raw.githubusercontent.com/kaisermustard/-E2-Obj_Parser/master/wolf.obj
+]#
+
+if ( first(  ) ) {
+    runOnChat( 1 )
+    runOnHTTP( 1 )
+    
+    Scale = 12.50
+    
+    Time = 0.125
+    Quota = 99
+    
+    function f( Index:number, A:vector, B:vector, C:vector ) {
+        local A = entity(  ):toWorld( A )
+        local B = entity(  ):toWorld( B )
+        local C = entity(  ):toWorld( C )
+            
+        local Normal = ( B - A ):cross( C - A ):normalized(  )
+            
+        local I = Index
+        
+        if ( !holoEntity( I ) ) {
+            holoCreate( I )
+            holoModel( I, "models/holograms/cube.mdl" )
+            
+            holoColor( I, vec( 128 + ( Normal:x(  ) * 128 ), 128 + ( Normal:y(  ) * 128 ), 128 ) )
+            
+            holoParent( I, entity(  ) )
+            holoPos( I, ( A + B + C ) / 3 )
+            holoAng( I, Normal:toAngle(  ) )
+            
+            holoScaleUnits( I, vec( 0.00125, 5000, 5000 ) )
+            
+            holoClipEnabled( I, 1, 1 )
+            holoClipEnabled( I, 2, 1 )
+            holoClipEnabled( I, 3, 1 )
+            
+            holoClip( I, 1, holoEntity( I ):toLocal( ( A + B ) / 2 ), holoEntity( I ):toLocalAxis( Normal:rotateAroundAxis( ( A - B ):normalized(  ), 90 ) ), 0 )
+            holoClip( I, 2, holoEntity( I ):toLocal( ( B + C ) / 2 ), holoEntity( I ):toLocalAxis( Normal:rotateAroundAxis( ( B - C ):normalized(  ), 90 ) ), 0 )
+            holoClip( I, 3, holoEntity( I ):toLocal( ( C + A ) / 2 ), holoEntity( I ):toLocalAxis( Normal:rotateAroundAxis( ( C - A ):normalized(  ), 90 ) ), 0 )
+        }
+    }
+    
+    X = 0
+    
+    State = 0
+}
+
+interval( Time * 1000 )
+
+if ( State == 0 ) {
+    if ( chatClk( owner(  ) ) ) {
+        local Said = owner(  ):lastSaid(  ):explode( " " )
+        
+        local Prefix = "#"
+        
+        if ( Said[ 1, string ] == Prefix + "import" ) {
+            hideChat( 1 )
+            
+            local Obj = Said[ 2, string ]
+            
+            if ( httpCanRequest(  ) ) {
+                holoDeleteAll(  )
+                
+                Vertices = array(  )
+                VerticesCount = 0
+                Faces = array(  )
+                FacesCount = 0
+                
+                httpRequest( Obj ) 
+                
+                if ( Said[ 3, string ] != "" ) {
+                    Scale = Said[ 3, string ]:toNumber(  )
+                }
+                
+                State = 1
+            }
+        }
+    }    
+}
+elseif ( State == 1 ) {
+    if ( httpClk(  )  ) {
+        Data = httpData(  )
+        
+        DataExplode = Data:explodeRE( "\n+" )
+    
+        X = 0
+    
+        State = 2
+    }
+}
+elseif ( State == 2 ) {
+    while ( perf( Quota ) & X < DataExplode:count(  ) ) {
+        X = X + 1
+        
+        local S = DataExplode[ X, string ]
+        
+        local Word = S:explodeRE( "%s+" )
+        
+        local Type = Word[ 1, string ]
+        
+        if ( Type == "v" ) {
+            local X = Word[ 2, string ]:toNumber(  )
+            local Y = Word[ 4, string ]:toNumber(  )
+            local Z = Word[ 3, string ]:toNumber(  )
+            
+            Vertices:pushVector( vec( X, Y, Z )  * Scale )
+            
+            VerticesCount = Vertices:count(  )
+        }
+        
+        if ( Type == "f" ) {
+            local Va = Word[ 2, string ]:explode( "/" )[ 1, string ]:toNumber(  )
+            local Vb = Word[ 3, string ]:explode( "/" )[ 1, string ]:toNumber(  )
+            local Vc = Word[ 4, string ]:explode( "/" )[ 1, string ]:toNumber(  )
+            
+            Faces:pushVector( vec( Va, Vb, Vc ) )
+            
+            FacesCount = Faces:count(  )
+        }
+    }
+    if ( X >= DataExplode:count(  ) ) {
+        X = 0
+        
+        State = 3
+    }
+}
+
+elseif ( State == 3 ) {
+    if ( X < Faces:count(  ) ) {
+        X = X + 1
+        
+        f( X, Vertices[ Faces[ X, vector ]:x(  ), vector ], Vertices[ Faces[ X, vector ]:y(  ), vector ], Vertices[ Faces[ X, vector ]:z(  ), vector ] )
+    }
+    if ( X >= Faces:count(  ) ) {
+        X = 0
+        
+        State = 0
+    }
+}
+
+#[]#
