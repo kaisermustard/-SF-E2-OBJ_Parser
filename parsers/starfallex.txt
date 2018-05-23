@@ -44,7 +44,7 @@ if CLIENT then
     local meshtable = {  }
     local obj = nil
     
-    local directory = "non_textured"
+    local directory = "textured"
     local model = "cube"
     local path = "https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/".. directory .. "/" .. model .. ".obj"
 
@@ -133,9 +133,9 @@ if CLIENT then
                 
                 if table.count( verticestextures ) != 0 then
                     table.add( meshtable, {
-                        { color = Color( 255, 255, 255, 255 ), pos = -vertices[faces[x].x], u = verticestextures[uvcoordinates[x].x].x, v = verticestextures[uvcoordinates[x].x].y },
-                        { color = Color( 255, 255, 255, 255 ), pos = -vertices[faces[x].y], u = verticestextures[uvcoordinates[x].y].x, v = verticestextures[uvcoordinates[x].y].y },
-                        { color = Color( 255, 255, 255, 255 ), pos = -vertices[faces[x].z], u = verticestextures[uvcoordinates[x].z].x, v = verticestextures[uvcoordinates[x].z].y },
+                        { color = Color( 255, 255, 255, 255 ), pos = -vertices[faces[x].x], u = -verticestextures[uvcoordinates[x].x].x, v = -verticestextures[uvcoordinates[x].x].y },
+                        { color = Color( 255, 255, 255, 255 ), pos = -vertices[faces[x].y], u = -verticestextures[uvcoordinates[x].y].x, v = -verticestextures[uvcoordinates[x].y].y },
+                        { color = Color( 255, 255, 255, 255 ), pos = -vertices[faces[x].z], u = -verticestextures[uvcoordinates[x].z].x, v = -verticestextures[uvcoordinates[x].z].y },
                     } )
                 else
                    local normal = ( vertices[faces[x].y] - vertices[faces[x].x] ):cross( vertices[faces[x].z] - vertices[faces[x].x] ):getNormalized(  )
@@ -178,7 +178,7 @@ if CLIENT then
             
             if first == 1 then
                 print( 
-                "Time :" .. " " .. math.round( timer.curtime(  ) - curtime ) .. "s" .. "\n" ..
+                "Time :" .. " " .. math.round( timer.curtime(  ) - curtime, 2 ) .. "s" .. "\n" ..
                 "Vertices :" .. " " .. table.count( vertices ) .. "\n" ..
                 "Faces :" .. " " .. table.count( faces )
                  )
