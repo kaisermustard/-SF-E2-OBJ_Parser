@@ -2,206 +2,193 @@
 --@author kaisermustard
 
 --[[
-Non_Textured :
-https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/ed/cube.obj
-https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/ed/sphere.obj
-https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/ed/corner_cube.obj
-https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/ed/corner_cube_curved.obj
-https://raw.githubusercontent.com/kaisermustard/-E2-Obj_Parser/master/models/non_textured/master/teapot.obj
-https://raw.githubusercontent.com/kaisermustard/-E2-Obj_Parser/master/models/non_textured/master/shuttle.obj
-https://raw.githubusercontent.com/kaisermustard/-E2-Obj_Parser/master/models/non_textured/master/suzzane.obj
-https://raw.githubusercontent.com/kaisermustard/-E2-Obj_Parser/master/models/non_textured/master/deer.obj
-https://raw.githubusercontent.com/kaisermustard/-E2-Obj_Parser/master/models/non_textured/master/wolf.obj
-]]--
-
---[[
-Textured :
-https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/textured/cube.obj
-]]--
-
---[[
-Textures :
-https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/textured/cube.png
+  Textured :
+    https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/cube.obj
+    https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/sphere.obj
+    https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/corner_cube.obj
+    https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/corner_cube_curved.obj
+    https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/teapot.obj
+    https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/shuttle.obj
+    https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/suzzane.obj
+    https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/deer.obj
+    https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/wolf.obj
+    https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/male_head.obj
 ]]--
 
 if CLIENT then
-    local first = 1
+  local scale = 5
 
-    local quota = 0.9
+  local state = 0
+  
+  local curtime = 0
+  
+  local x = 0
 
-    local x = 0
+  local quota = 0.9
 
-    local state = 0
+  local directory = "non_textured"
+  local model = "shuttle"
+  local path = "https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/".. directory .. "/" .. model .. ".obj"
 
-    local data = {  }
+  local data = {}
 
-    local vertices = {  }
-    local verticesnormals = {  }
-    local verticestextures = {  }
-    local faces = {  }
-    local uvcoordinates = {  }
+  local vertices = {}
+  local verticesnormals = {}
+  local verticestextures = {}
+  local faces = {}
+  local normals = {}
+  local uvs = {}
     
-    local meshtable = {  }
-    local obj = nil
+  local meshtable = {}
+  local obj = nil
     
-    local directory = "textured"
-    local model = "cube"
-    local path = "https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/".. directory .. "/" .. model .. ".obj"
-
-    local non_textured = render.getTextureID( "" )
-    local textured = render.getTextureID( "https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/textured/" .. model .. ".png" )
+  local texture = render.getTextureID("")
     
-    local curtime = 0
+  local first = 1
    
-    local function perf( value )
-        local a = quotaUsed(  )
-        local b = quotaMax(  )
-        local c = quotaAverage(  )
-        local d = value
-        
-        return ( a < b * d ) and ( c < b )
-    end
+  local function perf(value)
+    return (quotaUsed() < quotaMax() * value) and (quotaAverage() < quotaMax())
+  end
 
-    local function callback( content, size ) 
-        table.add( data, string.explode( "\n+", content, true ) )
+  local function callback(content, size) 
+    table.add(data, string.explode("\n+", content, true))
         
-        curtime = timer.curtime(  )
+    curtime = timer.curtime()
                 
-        state = 1
-    end
+    state = 1
+  end
     
-    local function update(  ) 
-        if state == 0 then
-            if http.canRequest(  ) then
-                http.get( path, callback )
-            end
-        elseif state == 1 then
-            while perf( quota ) and x < table.count( data ) do
-                x = x + 1
+  local function update(  ) 
+    if state == 0 then
+      hook.add("permissionrequest", "permission", function()
+        if hasPermission("http.get", path) then
+          if http.canRequest(  ) then
+            http.get(path, callback)
+          end
+        end
+      end)
+    elseif state == 1 then
+      while perf(quota) and x < table.count(data) do
+        x = x + 1
             
-                local s = data[x]
+        local s = data[x]
             
-                local word = string.explode( "%s+", s, true )
-                local type = word[1]
+        local word = string.explode("%s+", s, true)
+        local type = word[1]
             
-                if type == "v" then
-                    local x = tonumber( word[2] )
-                    local y = tonumber( word[3] )
-                    local z = tonumber( word[4] )
+        if type == "v" then
+          local x = tonumber(word[2]) * scale
+          local y = tonumber(word[3]) * scale
+          local z = tonumber(word[4]) * scale
                 
-                    table.insert( vertices, Vector( x, y, z ) )
-                end
+          table.insert(vertices, Vector(x, y, z))
+        end
                 
-                if type == "vn" then
-                    local x = tonumber( word[2] )
-                    local y = tonumber( word[3] )
-                    local z = tonumber( word[4] )
+        if type == "vn" then
+          local x = tonumber(word[2])
+          local y = tonumber(word[3])
+          local z = tonumber(word[4])
                 
-                    table.insert( verticesnormals, Vector( x, y, z ) )
-                end
+          table.insert(verticesnormals, Vector(x, y, z))
+        end
                 
-                if type == "vt" then
-                    local u = tonumber( word[2] ) 
-                    local v = tonumber( word[3] ) 
+        if type == "vt" then
+          local u = tonumber(word[2]) 
+          local v = tonumber(word[3]) 
                     
-                    table.insert( verticestextures, Vector( u, v ) )
-                end
+          table.insert(verticestextures, Vector(u, v))
+        end
                 
-                if type == "f" then
-                    local va = tonumber( string.explode( "/", word[2], false )[1] )
-                    local vb = tonumber( string.explode( "/", word[3], false )[1] )
-                    local vc = tonumber( string.explode( "/", word[4], false )[1] )
+        if type == "f" then
+          local va = tonumber(string.explode("/", word[2], false)[1])
+          local vb = tonumber(string.explode("/", word[3], false)[1])
+          local vc = tonumber(string.explode("/", word[4], false)[1])
                     
-                    local vta = tonumber( string.explode( "/", word[2], false )[2] )
-                    local vtb = tonumber( string.explode( "/", word[3], false )[2] )
-                    local vtc = tonumber( string.explode( "/", word[4], false )[2] )
-                
-                    table.insert( faces, Vector( va, vb, vc ) )
+          local vta = tonumber(string.explode("/", word[2], false)[2])
+          local vtb = tonumber(string.explode("/", word[3], false)[2])
+          local vtc = tonumber(string.explode("/", word[4], false)[2])
                     
-                    table.insert( uvcoordinates, Vector( vta, vtb, vtc ) )
-                end
-            end
-            if x >= table.count( data ) then
-                    x = 0
+          local vna = tonumber(string.explode("/", word[2], false)[3])
+          local vnb = tonumber(string.explode("/", word[3], false)[3])
+          local vnc = tonumber(string.explode("/", word[4], false)[3])
+                
+          table.insert(faces, Vector(va, vb, vc))
                     
-                    state = 2
-            end
-            
-        elseif state == 2 then
-            while perf( quota ) and x < table.count( faces ) do
-                x = x + 1
-                
-                if table.count( verticestextures ) != 0 then
-                    table.add( meshtable, {
-                        { color = Color( 255, 255, 255, 255 ), pos = -vertices[faces[x].x], u = -verticestextures[uvcoordinates[x].x].x, v = -verticestextures[uvcoordinates[x].x].y },
-                        { color = Color( 255, 255, 255, 255 ), pos = -vertices[faces[x].y], u = -verticestextures[uvcoordinates[x].y].x, v = -verticestextures[uvcoordinates[x].y].y },
-                        { color = Color( 255, 255, 255, 255 ), pos = -vertices[faces[x].z], u = -verticestextures[uvcoordinates[x].z].x, v = -verticestextures[uvcoordinates[x].z].y },
-                    } )
-                else
-                   local normal = ( vertices[faces[x].y] - vertices[faces[x].x] ):cross( vertices[faces[x].z] - vertices[faces[x].x] ):getNormalized(  )
-                
-                   table.add( meshtable, {
-                        { color = Color( 128 + ( normal.x * 128 ), 128 + ( normal.y * 128 ), 128, 255 ), pos = -vertices[faces[x].x], u = 0, v = 0 },
-                        { color = Color( 128 + ( normal.x * 128 ), 128 + ( normal.y * 128 ), 128, 255 ), pos = -vertices[faces[x].y], u = 0, v = 0 },
-                        { color = Color( 128 + ( normal.x * 128 ), 128 + ( normal.y * 128 ), 128, 255 ), pos = -vertices[faces[x].z], u = 0, v = 0 },
-                    } )
-                end
-            end
-            if x >= table.count( faces ) then
-                obj = mesh.createFromTable( meshtable )
-                
-                state = 3
-            end
+          table.insert(uvs, Vector(vta, vtb, vtc))
+                    
+          table.insert(normals, Vector(vna, vnb, vnc))
         end
     end
-    
-    local function draw(  )
-        if state == 3 then
-            matrix = chip(  ):getMatrix(  )
-            matrix:setAngles( chip(  ):localToWorldAngles( Angle( 0, 0, -90 ) ) )
-            
-            render.pushMatrix( matrix, true )
-            
-            if table.count( verticestextures ) != 0 then
-                render.setTexture( textured )
-            else
-                render.setTexture( non_textured )
-            end
-            
-            render.enableDepth( true )
-        
-            if obj != nil then
-                obj:draw(  )
-            end
-        
-            render.popMatrix(  )
-            
-            if first == 1 then
-                print( 
-                "Time :" .. " " .. math.round( timer.curtime(  ) - curtime, 2 ) .. "s" .. "\n" ..
-                "Vertices :" .. " " .. table.count( vertices ) .. "\n" ..
-                "Faces :" .. " " .. table.count( faces )
-                 )
-                
-                first = 0
-            end
-        end
+    if x >= table.count(data) then
+      x = 0
+                    
+      state = 2
     end
+            
+    elseif state == 2 then
+      while perf(quota) and x < table.count(faces) do
+        x = x + 1
+                
+        local normal = (vertices[faces[x].y] - vertices[faces[x].x]):cross(vertices[faces[x].z] - vertices[faces[x].x]):getNormalized()
+                
+        table.add(meshtable, {
+          {color = Color(128 + (normal.x * 128), 128 + (normal.y * 128), 128, 255), pos = -vertices[faces[x].x], u = 0, v = 0},
+          {color = Color(128 + (normal.x * 128), 128 + (normal.y * 128), 128, 255), pos = -vertices[faces[x].y], u = 0, v = 0},
+          {color = Color(128 + (normal.x * 128), 128 + (normal.y * 128), 128, 255), pos = -vertices[faces[x].z], u = 0, v = 0},
+        })
+      end
+      if x >= table.count(faces) then
+        obj = mesh.createFromTable(meshtable)
+                
+        state = 3
+      end
+    end
+  end
     
-    hook.add( "tick", "", update )
-    hook.add( "postdrawopaquerenderables", "", draw )
+  local function draw()
+    if state == 3 then
+      matrix = chip():getMatrix()
+      matrix:setAngles(chip():localToWorldAngles(Angle(0, 0, -90)))
+            
+      render.pushMatrix(matrix, true)
+            
+      render.setTexture(texture)
+      
+      render.enableDepth(true)
+        
+      if obj != nil then
+        obj:draw()
+      end
+        
+      render.popMatrix()
+            
+      if first == 1 then
+        printMessage(2, "Time :" .. " " .. math.round(timer.curtime() - curtime, 2) .. "s" .. "\n" .. "Vertices :" .. " " .. table.count(vertices) .. "\n" .. "Faces :" .. " " .. table.count(faces))
+        
+        first = 0
+      end
+    end
+  end
+
+  setupPermissionRequest({"http.get"}, "", true)
+    
+  hook.add("tick", "", update)
+  hook.add("postdrawopaquerenderables", "", draw)
 end
 
 if SERVER then
-    for k, v in pairs( find.byClass( "starfall_hud" ) ) do
-        if v != nil then
-            if v:getOwner(  ) == owner(  ) then
-                if chip(  ):getPos(  ):getDistance( v:getPos(  ) ) < 25 then
-                    v:linkComponent( chip(  ) )
-                end
-            end
+  for k, v in pairs(find.byClass("starfall_hud")) do
+    if v != nil then
+      if v:getOwner() == owner() then
+        if chip():getPos():getDistance(v:getPos()) < 25 then
+          v:linkComponent(chip())
+          
+          v:setPos(chip():localToWorld(Vector(0, 0, 1.25)))
+          v:setAngles(chip():localToWorldAngles(Angle(0, 0, 1.25)))
+          
+          constraint.weld(v, chip())
         end
+      end
     end
+  end
 end
-
---[[]]--

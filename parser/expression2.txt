@@ -17,20 +17,25 @@
 
 @trigger none
 
-#[
-https://raw.githubusercontent.com/kaisermustard/-E2-Obj_Parser/master/cube.obj
-https://raw.githubusercontent.com/kaisermustard/-E2-Obj_Parser/master/teapot.obj
-https://raw.githubusercontent.com/kaisermustard/-E2-Obj_Parser/master/shuttle.obj
-https://raw.githubusercontent.com/kaisermustard/-E2-Obj_Parser/master/monkey.obj
-https://raw.githubusercontent.com/kaisermustard/-E2-Obj_Parser/master/deer.obj
-https://raw.githubusercontent.com/kaisermustard/-E2-Obj_Parser/master/wolf.obj
-]#
+#[[
+  Textured :
+    https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/cube.obj
+    https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/sphere.obj
+    https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/corner_cube.obj
+    https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/corner_cube_curved.obj
+    https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/teapot.obj
+    https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/shuttle.obj
+    https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/suzzane.obj
+    https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/deer.obj
+    https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/wolf.obj
+    https://raw.githubusercontent.com/kaisermustard/-SF-E2-OBJ_Parser/master/models/non_textured/male_head.obj
+]]#
 
 if ( first(  ) ) {
     runOnChat( 1 )
     runOnHTTP( 1 )
     
-    Scale = 12.50
+    Scale = 5
     
     Time = 0.125
     Quota = 99
